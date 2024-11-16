@@ -1,3 +1,5 @@
+library(MASS)
+
 K = 3
 
 N = rpois(K,100)
@@ -27,3 +29,16 @@ mu3m = generate_am(20)*theta[3] + rnorm(20)
 
 sigma1 = 3
 
+
+
+X1m = mvrnorm(n = N[1], mu = mu1m, Sigma = 3*diag(20))
+X2m = mvrnorm(n = N[1], mu = mu2m, Sigma = 3*diag(20))
+X3m = mvrnorm(n = N[1], mu = mu3m, Sigma = 3*diag(20))
+
+data = matrix()
+
+for(i in 0:59){
+  phi = 0.5* diag(n[i%%20 + 1]) + 0.5*matrix(1, n[i%%20 + 1],n[i%%20 + 1])
+  Sigma = rinvwishart(60, phi)
+  dat = mvrnorm(n = n[i%%20], mu = )
+}
