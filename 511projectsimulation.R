@@ -1,5 +1,5 @@
 library(MASS)
-
+library(LaplacesDemon)
 K = 3
 
 N = rpois(K,100)
@@ -32,13 +32,38 @@ sigma1 = 3
 
 
 X1m = mvrnorm(n = N[1], mu = mu1m, Sigma = 3*diag(20))
-X2m = mvrnorm(n = N[1], mu = mu2m, Sigma = 3*diag(20))
-X3m = mvrnorm(n = N[1], mu = mu3m, Sigma = 3*diag(20))
+X2m = mvrnorm(n = N[2], mu = mu2m, Sigma = 3*diag(20))
+X3m = mvrnorm(n = N[3], mu = mu3m, Sigma = 3*diag(20))
 
-data = matrix()
-
-for(i in 0:59){
-  phi = 0.5* diag(n[i%%20 + 1]) + 0.5*matrix(1, n[i%%20 + 1],n[i%%20 + 1])
-  Sigma = rinvwishart(60, phi)
-  dat = mvrnorm(n = n[i%%20], mu = )
+data = matrix(ncol = sum(N), nrow = sum(n))
+j=1
+for(k in 1:3){
+  
+  for(i in 1:N[k])
+    {
+    datam = c()
+    for(m in 1:20){
+      phi = 0.5*diag(n[m]) + 0.5*matrix(1, n[m], n[m])
+      Sigma = rinvwishart(60,phi)
+      v = 1/sqrt(diag(Sigma))
+      Sigma = Sigma*outer(v,v)
+    
+    if(k==1){
+        dat = mvrnorm(n=1, mu = rep(X1m[i,m],n[m]), Sigma = Sigma)
+    }
+    else if(k==2){
+      dat = mvrnorm(n=1, mu = rep(X2m[i,m],n[m]), Sigma = Sigma)
+    }
+    else{
+      dat = mvrnorm(n=1, mu = rep(X3m[i,m],n[m]), Sigma = Sigma)
+    }
+    datam = c(datam, dat)
+    }
+    data[,j] = datam
+    j = j+1
+  }
 }
+
+
+
+
