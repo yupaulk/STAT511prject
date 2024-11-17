@@ -64,6 +64,19 @@ for(k in 1:3){
   }
 }
 
+#V = 4
+
+#R = 20
+
+#nr = pois(R, 20)
+
+#mu1mr = generate_am(20)*theta[1] + rnorm(20)
+#mu2mr = generate_am(20)*theta[2] + rnorm(20)
+#mu3mr = generate_am(20)*theta[3] + rnorm(20)
+
+#X1mr = mvrnorm(n = N[1], mu = mu1mr, Sigma = 3*diag(20))
+#X2mr = mvrnorm(n = N[2], mu = mu2mr, Sigma = 3*diag(20))
+#X3mr = mvrnorm(n = N[3], mu = mu3mr, Sigma = 3*diag(20))
 
 
-
+mug = runif(n = 8000, min = 4, max = 8)
