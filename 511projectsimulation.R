@@ -119,4 +119,4 @@ mug = runif(n = 8000, min = 4, max = 8)
 
 data3 = mvrnorm(n = sum(N), mu = mug, Sigma = diag(8000))
 
-data = rbind(data, data3)
+data = rbind(data, t(data3))
