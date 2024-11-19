@@ -121,4 +121,8 @@ data3 = mvrnorm(n = sum(N), mu = mug, Sigma = diag(8000))
 
 data = t(rbind(data, t(data3)))
 
-Y = mvrnorm(n = sum(N), mu = theta, Sigma = 64*diag(3))
+Y = vector(length = sum(N))
+
+Y[1:N[1]] = rnorm(N[1], mean = theta[1], sd = 64)
+Y[(N[1]+1):(N[2]+N[1])] = rnorm(N[2], mean = theta[2], sd = 64)
+Y[(N[2]+N[1]+1):sum(N)] = rnorm(N[3], mean = theta[3], sd = 64)
