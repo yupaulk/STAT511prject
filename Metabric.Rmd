@@ -1,0 +1,95 @@
+---
+title: "Metabric EDA"
+author: "Paul K. Yu"
+date: "2024-11-19"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Exploratory data analysis
+
+## Do this once (set eval to TRUE only once)
+
+```{r eda install, eval=FALSE}
+# Install required libraries if not already installed
+if (!requireNamespace("pheatmap", quietly = TRUE)) install.packages("pheatmap")
+if (!requireNamespace("ggplot2", quietly = TRUE)) install.packages("ggplot2")
+```
+
+# Get data
+
+```{r}
+library(data.table)
+
+# Get RNA data
+epxression <- as.data.frame(fread("metabric/data_mrna_illumina_microarray.txt", header = TRUE, sep = "\t"))
+
+# Remove NA
+epxression <- na.omit(epxression)
+
+# Remove duplicate genes
+epxression <- epxression[!duplicated(epxression$Entrez_Gene_Id), ]
+
+# Make gene names as row name
+rownames(epxression) <- epxression[[1]]  # Set the first column as row names
+
+# Create a table of gene name and ID
+gene_names <- epxression[, c(1, 2)]
+
+# Remove gene name and ID columns
+epxression <- epxression[, -c(1, 2)] 
+
+n <- ncol(epxression) ## number of subjects
+g <- nrow(epxression) ## number of gene features
+
+# Get outcome data
+outcome <- fread("metabric/brca_metabric_clinical_data.tsv", header = TRUE, sep = "\t")
+outcome <- outcome[, c("Patient ID", "Overall Survival Status")]
+outcome$`Overall Survival Status` <- as.factor(outcome$`Overall Survival Status`)
+levels(outcome$`Overall Survival Status`) <- c(0,1)
+
+# Remove NA
+outcome <- na.omit(outcome)
+matches <- colnames(epxression) %in% outcome$`Patient ID`
+epxression <- epxression[, matches]
+matches <- outcome$`Patient ID` %in% colnames(epxression)
+outcome <- outcome[matches,]
+
+```
+
+# Summary of the dataset
+
+Get summary of outcome data
+
+```{r}
+summary(outcome)
+```
+
+Check for missing values
+
+```{r}
+sum(is.na(epxression))
+sum(is.na(outcome))
+```
+
+# Correlation analysis
+
+```{r}
+library(pheatmap)
+
+# Compute correlations
+cor_matrix <- cor(epxression, use = "pairwise.complete.obs")
+
+# Visualize correlations as a heatmap
+pheatmap(cor_matrix,
+         show_rownames = FALSE,
+         show_colnames = FALSE,
+         clustering_distance_rows = "correlation", 
+         clustering_distance_cols = "correlation",
+         fontsize = 4,
+         main = "Correlation Heatmap")
+
+```
