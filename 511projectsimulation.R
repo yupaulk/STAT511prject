@@ -22,10 +22,11 @@ generate_am = function(iter){
   }
   return(randoms)
 }
+am = generate_am(20)
 
-mu1m = generate_am(20)*theta[1] + rnorm(20)
-mu2m = generate_am(20)*theta[2] + rnorm(20)
-mu3m = generate_am(20)*theta[3] + rnorm(20)
+mu1m = am*theta[1] + rnorm(20)
+mu2m = am*theta[2] + rnorm(20)
+mu3m = am*theta[3] + rnorm(20)
 
 s2 = 9
 
