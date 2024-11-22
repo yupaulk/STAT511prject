@@ -1,0 +1,128 @@
+\documentclass{statsoc}
+
+\usepackage[a4paper]{geometry}
+\usepackage{graphicx}
+\usepackage[textwidth=8em,textsize=small]{todonotes}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{enumerate}
+\usepackage{amsmath}
+\usepackage{mathrsfs}
+\usepackage{color}
+\usepackage{amssymb}
+\usepackage{tikz-cd} 
+\usepackage[export]{adjustbox}
+\usepackage{subfig}
+\usepackage{booktabs}
+\usepackage{algorithm, algcompatible}
+
+\algnewcommand\INPUT{\item[\textbf{Input:}]}%
+\algnewcommand\OUTPUT{\item[\textbf{Output:}]}%
+\def\cc{\color{blue}}
+\usepackage[normalem]{ulem}
+
+\newtheorem{theorem}            {Theorem}[section]
+\newtheorem{proposition}        [theorem]{Proposition}
+
+
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\usepackage{natbib}
+
+\title[Topological Detection]{Outcome-Guided Sparse K-Means for Disease Subtype Discovery via Integrating Phenotypic Data with High-Dimensional Transcriptomic Data}
+\author[]{Group 7: I Hung, Nathan, Paul}
+\address{Penn State University}
+
+
+
+\begin{document}
+
+
+\section{Problem Description and Modeling Objective}
+
+The challenge in precision medicine is to identify disease subtypes linked to clinical outcomes, as traditional methods often miss complex connections between biological data and clinical traits, resulting in less effective treatments. This study introduces the GuidedSparseK-means algorithm, which integrates clinical data with high-dimensional omics data to address the need for innovative approaches. The algorithm employs a unified objective function that combines weighted K-means clustering, lasso regularization for gene selection, and the inclusion of a phenotypic variable. By iteratively optimizing this function, GuidedSparseK-means aims to yield statistically robust and clinically relevant subtypes, enhancing the potential for personalized treatment strategies.
+
+\section{Data Description and Availiability of data set}
+
+The study utilizes high-dimensional omics data and clinical phenotypic data from modern epidemiological cohorts, specifically focusing on transcriptomic datasets related to breast cancer and Alzheimer’s disease. These datasets are characterized by their richness and complexity, encompassing a wide array of biological measurements and associated clinical outcomes. The availability of such comprehensive data allows for a robust analysis of the relationships between molecular profiles and clinical characteristics. To facilitate further research and application of the GuidedSparseK-means algorithm, the dataset and the implementation of the algorithm have been made publicly available as an R package on GitHub, ensuring accessibility for researchers in the field.
+
+METABRIC breast cancer gene expression data (Curtis et al., 2012)
+
+\section{Model and Methods Description}
+
+The GuidedSparseK-means algorithm enhances traditional sparse K-means clustering by integrating clinical phenotypic data into the clustering process. The model employs a unified objective function that comprises three key components: a weighted K-means approach for effective sample clustering, lasso regularization for gene selection from high-dimensional omics data, and the incorporation of a phenotypic variable to guide the clustering towards biologically meaningful outcomes. This iterative optimization process simultaneously refines both sample clustering and gene selection, allowing the algorithm to uncover subtypes that are not only statistically robust but also aligned with clinical relevance. Through simulations and applications to real-world datasets, the performance of GuidedSparseK-means is benchmarked against existing clustering methods, demonstrating its superiority in capturing the complex relationships inherent in the data.
+
+\subsection{K-means Algorithm}
+
+The first clustering method the paper described is the normal k means algorithm. It considers $X_{gi}$ to be the gene expression of gene g and subject i. Let the total number of genes be G and the total number of subjects be n. The normal k means algorithm finds K clusters of our n subjects such that the clusters are close together (usually in the euclidean distance). Denote such an optimal clustering as $\hat{C}$. This is done by minimizing the objective function 
+\begin{equation}
+    \hat{C} = \textrm{argmin}_C \sum_{g=1}^G WCCS_g = \textrm{argmin}_C \sum_{g=1}^G \sum_{k = 1}^K \frac{1}{n_k} \sum_{(i,j) \in C_k} (X_{gi} - X_{gj})^2. 
+\end{equation}
+Where C is a partition of our data set into K clusters and $C_k$ for $1\leq k \leq K$ is the elements in the kth cluster and $n_k$ is the size of cluster k.
+
+\subsection{Sparse K-means Algorithm}
+
+Due to the nature of genetics data, we have that there are usually a significantly more number of genes than we have subjects. Thus, there is usually an assumption of sparsity in the number of genes that would actually have a significant impact on the clustering of subjects. The solution to taking into account this sparsity into our clustering is to maximize the weighted between cluster sum of squares subject to a LASSO like penalty. This usage of between cluster sum of squares is to avoid the issue of a trivial solution to equation (1) from a naive implementation of a lasso penalty. The sparse K means clustering, denoted as $\hat{C}_{Sparse}$, is found by maxizing the objective function 
+\begin{equation}
+    \hat{C}_{Sparse} = \textrm{argmax}_{C,w} \sum_{g=1}^G w_g BCSS_g(C) = \textrm{argmax}_{C,w} w_g\left[\frac{1}{n} \sum_{i,j \in C} (X_{gi} - X_{gj})^2 - \sum_{k=1}^K \frac{1}{n_k}\sum_{i,j \in C_k} (X_{gi} - X_{gj})^2 \right]
+\end{equation}
+subject to $||w||_2 \leq 1$, $||w||_1 \leq s$, $w \geq 0$ and the weight vector discarded from the argmax. Above, we have that $s$ is a tuning parameter in order to control the number of genes we select. The $L_1$ penalty is chosen to cause gene selection and the $L_2$ penalty is additionally used to facilitate selecting more than one gene. Notice that the total sum of squares term is constant for all clusters and our problem thus involves minimizing the within cluster sum of squares with the additional weights.
+    
+
+\subsection{GuidedSparseKMeans}
+
+The main novelty that this paper introduces is the addition of a guided term to our objective function for sprase k means. This is motivated by a desire to include information that we have from clinical outcomes into our clustering. We denote the association between a gene g and a given clinical outcome variable as $U_g$. In general the $U_g$ is defined in terms of a function $U: \RR^n \times \RR^n \rightarrow \RR$ such that $U_g = U(x_g, y)$, where $x_g$ is the expression level of gene g across all subjects and y is the vector of clinical outcomes. From above, we can see that $BCSS_g(C) = \left[\frac{1}{n} \sum_{i,j \in C} (X_{gi} - X_{gj})^2 - \sum_{k=1}^K \frac{1}{n_k}\sum_{i,j \in C_k} (X_{gi} - X_{gj})^2 \right]$ and $TSS_g = \frac{1}{n} \sum_{i,j \in C} (X_{gi} - X_{gj})^2$. With these, we can define our objective function fo the GuidedSparseKmeans with the optimal clustering being $\hat{C}_{GSK}$
+
+\begin{equation}
+    \hat{C}_{GSK} = \textrm{argmax}_{C,w} \sum_{g=1}^G w_g \left[ \frac{BCSS_g(C)}{TSS_g} + \lambda U_g  \right]
+\end{equation}
+subject to the constraints $||w||_2 \leq 1$, $||w||_1 \leq s$, $w \geq 0$. Similarly to above, the weight vector component of the argmax is discarded. Further, $\lambda$ is a tuning parameter to control how much of the clustering is guided by the clinical outcome and how much is guided by how much gene g affects the clustering separation. Notice further that the term corresponding to gene g separation ability is normalized by $TSS_g$ to allow this term to be comparable with the scale of $U_g$.  In the paper, the author chose to choose a $U_g$ such that it is based on a regression model $f_g$ which is univariate. Namely $y = f_g(x_g) + \varepsilon$ with $\varepsilon$ some error is the relationship between outcomes and gene expression. They defined $U_g$ such that it is the pseudo R-squared of this regression function. Namely,
+
+\begin{equation*}
+    U_g = 1- \left[\frac{L(f_0)}{L(f_g)} \right]^{2/n},
+\end{equation*}
+
+where $L(f_0)$ is the likelihood of the null model and $L(f_g)$ is the likelihood of the $f_g$ model. The GuidedSparseKMeans is computed as follows.
+
+\begin{algorithm}
+    \caption{GuidedSparseKmeans Algorithm}
+    \begin{algorithmic}[1]
+        \REQUIRE Number of clusters K, $\lambda$, s
+        \INPUT Number of subjects n, number of subjects G, Gene data $X \in \RR^{n\times G}$, clinical outcome $U_g$
+        \OUTPUT Optimal clustering $\hat{C}_{GSK}$ for GuidedSparseKmeans
+        \STATE \textbf{Initialization} Let $U_g^* = U_g I(U_g \geq U_{(r)})$, where $U_{(r)}$ is the rth largest value of $U_j$ for $j = 1,\ldots, G$ (r = 400 was chosen for most of the implementation by the author). Initialize $w_g = \frac{U_g^*}{\sum_{g=1}^G U_g^*} \times s$
+        \STATE Fix w and update $C_k$ with weighted K means. Namely we have $C(w) = \arg \max_C \sum_{g=1}^G w_g BCSS_g(C)$. 
+        \STATE With C fixed, update w as $w_g(C) = \frac{S(a_g, b)}{||S||_2}$, wehre $S(x,c) = max(x-c, 0)$, $a_g = \frac{BCSS_g(C)}{TSS_g} + \lambda U_g$ where b is chosen such that the update weight vector as $L_1$ norm of s and $b=0$ is $||w||_1 \leq s$ and $S := (S(a_1,b), \ldots S(a_G, b)) \in \RR^G$. 
+        \STATE Iterate the previous steps 2 and 3 until $\frac{||w^t - w^{t-1}||_1}{||w^{t-1}||_1} \leq 10^{-4}$ with t being the number of iterations and $w^t$ being the weight on the t-th iteration   
+    \end{algorithmic}
+\end{algorithm}
+
+
+\section{Simulation Studies}
+
+The data that was used for the simulation studies was outlined in the paper to best emulate certain characteristics of genetic data. There were 3 subtypes in this example, and the data was simulated to have intrinsic genes, confounding genes and noise genes that have a correlated structure. The ways to generate the 3 types of data are as follows. 
+
+\begin{algorithm}
+    \caption{Intrinsic Gene Data Generation}
+    \begin{algorithmic}[1]
+        \INPUT number of subtypes K, Number of gene modules M
+        \OUTPUT A data matrix $X$ containing the simulated gene data
+        \STATE \textbf{Initialization} K = 3, M = 20
+        \STATE Simulate the number of subjects in each subtype $N_k \sim POI(100)$ for $1 \leq k \leq K$. The total number of subjects we have is thus $N = \sum_{k=1}^K N_k$
+        \STATE Simulate M gene modules letting $n_m \sim POI(20)$, where $n_m$ is the number of features in module m.
+        \STATE Let $\theta_k$ be baseline expression of the gene of subtype k and $\theta_k = 2 + 2k$. $\mu_{km}$ is the template gene expression of subtype k and module m. We let $\mu_{km} = \alpha_m\theta_k + Z$ with $\alpha_m \sim UNIF((-2,-0.2 \cup (0.2,2))$, where $Z \sim N(0,1)$.
+        \STATE Generate $X_{kmi}' \sim N(\mu_{km}, 9)$, where 9 is the biological variation in the gene expression. 
+        \STATE Sample $\Sigma_{km}' \sim W^{-1}(\phi, 60)$, where $\phi = 0.5 I_{n_m \times n_m} + 0.5*1_{n_m\times n_m}$, where $1_{x\times y}$ is the $x\times y$ dimensional matrix with elements of all 1.
+        \STATE Calculate gene covariance matrix for sutype k and module m $\Sigma_{km}$ by standardizing $\Sigma_{km}'$ such that the diagonal is all 1.
+        \STATE Gene expression data for subject i in subtype k and module m is $(X_{1kmi}, \ldots, X_{n_mkmi})^T \sim MVN(X_{kmi}', \Sigma_{km})$
+    \end{algorithmic}
+\end{algorithm}
+
+\section{Citations and References}
+
+\bibliographystyle{rss}
+\bibliography{example}
+
+\end{document}
