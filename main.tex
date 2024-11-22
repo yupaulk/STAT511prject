@@ -66,11 +66,39 @@ Where C is a partition of our data set into K clusters and $C_k$ for $1\leq k \l
 
 Due to the nature of genetics data, we have that there are usually a significantly more number of genes than we have subjects. Thus, there is usually an assumption of sparsity in the number of genes that would actually have a significant impact on the clustering of subjects. The solution to taking into account this sparsity into our clustering is to maximize the weighted between cluster sum of squares subject to a LASSO like penalty. This usage of between cluster sum of squares is to avoid the issue of a trivial solution to equation (1) from a naive implementation of a lasso penalty. The sparse K means clustering, denoted as $\hat{C}_{Sparse}$, is found by maxizing the objective function 
 \begin{equation}
-    \hat{C}_{Sparse} = \textrm{argmax}_C \sum_{g=1}^G w_g BCSS_g(C) = \textrm{argmax}_C w_g\left[\frac{1}{n} \sum_{i,j \in C} (X_{gi} - X_{gj})^2 - \sum_{k=1}^K \frac{1}{n_k}\sum_{i,j \in C_k} (X_{gi} - X_{gj})^2 \right]
+    \hat{C}_{Sparse} = \textrm{argmax}_{C,w} \sum_{g=1}^G w_g BCSS_g(C) = \textrm{argmax}_{C,w} w_g\left[\frac{1}{n} \sum_{i,j \in C} (X_{gi} - X_{gj})^2 - \sum_{k=1}^K \frac{1}{n_k}\sum_{i,j \in C_k} (X_{gi} - X_{gj})^2 \right]
 \end{equation}
-subject to $||w||_2 \leq 1$, $||w||_1 \leq s$, $w \geq 0$. Above, we have that $s$ is a tuning parameter in order to control the number of genes we select. The $L_1$ penalty is chosen to cause gene selection and the $L_2$ penalty is additionally used to facilitate selecting more than one gene. Notice that the total sum of squares term is constant for all clusters and our problem thus involves minimizing the within cluster sum of squares with the additional weights. 
+subject to $||w||_2 \leq 1$, $||w||_1 \leq s$, $w \geq 0$ and the weight vector discarded from the argmax. Above, we have that $s$ is a tuning parameter in order to control the number of genes we select. The $L_1$ penalty is chosen to cause gene selection and the $L_2$ penalty is additionally used to facilitate selecting more than one gene. Notice that the total sum of squares term is constant for all clusters and our problem thus involves minimizing the within cluster sum of squares with the additional weights.
+    
 
 \subsection{GuidedSparseKMeans}
+
+The main novelty that this paper introduces is the addition of a guided term to our objective function for sprase k means. This is motivated by a desire to include information that we have from clinical outcomes into our clustering. We denote the association between a gene g and a given clinical outcome variable as $U_g$. In general the $U_g$ is defined in terms of a function $U: \RR^n \times \RR^n \rightarrow \RR$ such that $U_g = U(x_g, y)$, where $x_g$ is the expression level of gene g across all subjects and y is the vector of clinical outcomes. From above, we can see that $BCSS_g(C) = \left[\frac{1}{n} \sum_{i,j \in C} (X_{gi} - X_{gj})^2 - \sum_{k=1}^K \frac{1}{n_k}\sum_{i,j \in C_k} (X_{gi} - X_{gj})^2 \right]$ and $TSS_g = \frac{1}{n} \sum_{i,j \in C} (X_{gi} - X_{gj})^2$. With these, we can define our objective function fo the GuidedSparseKmeans with the optimal clustering being $\hat{C}_{GSK}$
+
+\begin{equation}
+    \hat{C}_{GSK} = \textrm{argmax}_{C,w} \sum_{g=1}^G w_g \left[ \frac{BCSS_g(C)}{TSS_g} + \lambda U_g  \right]
+\end{equation}
+subject to the constraints $||w||_2 \leq 1$, $||w||_1 \leq s$, $w \geq 0$. Similarly to above, the weight vector component of the argmax is discarded. Further, $\lambda$ is a tuning parameter to control how much of the clustering is guided by the clinical outcome and how much is guided by how much gene g affects the clustering separation. Notice further that the term corresponding to gene g separation ability is normalized by $TSS_g$ to allow this term to be comparable with the scale of $U_g$.  In the paper, the author chose to choose a $U_g$ such that it is based on a regression model $f_g$ which is univariate. Namely $y = f_g(x_g) + \varepsilon$ with $\varepsilon$ some error is the relationship between outcomes and gene expression. They defined $U_g$ such that it is the pseudo R-squared of this regression function. Namely,
+
+\begin{equation*}
+    U_g = 1- \left[\frac{L(f_0)}{L(f_g)} \right]^{2/n},
+\end{equation*}
+
+where $L(f_0)$ is the likelihood of the null model and $L(f_g)$ is the likelihood of the $f_g$ model. The GuidedSparseKMeans is computed as follows.
+
+\begin{algorithm}
+    \caption{GuidedSparseKmeans Algorithm}
+    \begin{algorithmic}[1]
+        \REQUIRE Number of clusters K, $\lambda$, s
+        \INPUT Number of subjects n, number of subjects G, Gene data $X \in \RR^{n\times G}$, clinical outcome $U_g$
+        \OUTPUT Optimal clustering $\hat{C}_{GSK}$ for GuidedSparseKmeans
+        \STATE \textbf{Initialization} Let $U_g^* = U_g I(U_g \geq U_{(r)})$, where $U_{(r)}$ is the rth largest value of $U_j$ for $j = 1,\ldots, G$ (r = 400 was chosen for most of the implementation by the author). Initialize $w_g = \frac{U_g^*}{\sum_{g=1}^G U_g^*} \times s$
+        \STATE Fix w and update $C_k$ with weighted K means. Namely we have $C(w) = \arg \max_C \sum_{g=1}^G w_g BCSS_g(C)$. 
+        \STATE With C fixed, update w as $w_g(C) = \frac{S(a_g, b)}{||S||_2}$, wehre $S(x,c) = max(x-c, 0)$, $a_g = \frac{BCSS_g(C)}{TSS_g} + \lambda U_g$ where b is chosen such that the update weight vector as $L_1$ norm of s and $b=0$ is $||w||_1 \leq s$ and $S := (S(a_1,b), \ldots S(a_G, b)) \in \RR^G$. 
+        \STATE Iterate the previous steps 2 and 3 until $\frac{||w^t - w^{t-1}||_1}{||w^{t-1}||_1} \leq 10^{-4}$ with t being the number of iterations and $w^t$ being the weight on the t-th iteration   
+    \end{algorithmic}
+\end{algorithm}
+
 
 \section{Simulation Studies}
 
