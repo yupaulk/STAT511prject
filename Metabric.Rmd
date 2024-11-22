@@ -36,20 +36,26 @@ epxression <- epxression[!duplicated(epxression$Entrez_Gene_Id), ]
 # Make gene names as row name
 rownames(epxression) <- epxression[[1]]  # Set the first column as row names
 
-# Create a table of gene name and ID
-gene_names <- epxression[, c(1, 2)]
-
 # Remove gene name and ID columns
 epxression <- epxression[, -c(1, 2)] 
 
 n <- ncol(epxression) ## number of subjects
 g <- nrow(epxression) ## number of gene features
 
+# Calculate row averages
+row_averages <- rowMeans(epxression)
+
+# Determine the cutoff for the lowest 40%
+cutoff <- quantile(row_averages, probs = 0.4)
+
+# Filter rows
+epxression <- epxression[row_averages > cutoff, ]
+
 # Get outcome data
-outcome <- fread("metabric/brca_metabric_clinical_data.tsv", header = TRUE, sep = "\t")
+outcome <- as.data.frame(fread("metabric/brca_metabric_clinical_data.tsv", header = TRUE, sep = "\t"))
 outcome <- outcome[, c("Patient ID", "Overall Survival Status")]
 outcome$`Overall Survival Status` <- as.factor(outcome$`Overall Survival Status`)
-levels(outcome$`Overall Survival Status`) <- c(0,1)
+levels(outcome$`Overall Survival Status`) <- c(1,2)
 
 # Remove NA
 outcome <- na.omit(outcome)
@@ -89,7 +95,6 @@ pheatmap(cor_matrix,
          show_colnames = FALSE,
          clustering_distance_rows = "correlation", 
          clustering_distance_cols = "correlation",
-         fontsize = 4,
-         main = "Correlation Heatmap")
+         fontsize = 4)
 
 ```

@@ -64,30 +64,16 @@ sum(is.na(outcome))
 
 # Distribution of the dataset
 
-Get distribution of gene expression data
-
-```{r}
-library(reshape2)
-library(ggplot2)
-
-df <- melt(epxression)
-
-p <- ggplot(df, aes(x = value)) +
-  geom_density(alpha = 0.5) +
-  labs(title = "Density of Gene Expression", x = "Expression Level", y = "Density") +
-  theme_minimal()
-
-print(p)
-```
-
 Get distribution of outcome data
 
 ```{r}
+library(ggplot2)
+
 df <- as.data.frame(outcome)
 
 p <- ggplot(df, aes(x = outcome)) +
-  geom_density(alpha = 0.5) +
-  labs(title = "Density of Outcome", x = "Outcome", y = "Density") +
+  geom_histogram(alpha = 0.5, fill = "blue") +
+  labs(x = "Outcome", y = "Density") +
   theme_minimal()
 
 print(p)
@@ -102,10 +88,12 @@ library(pheatmap)
 cor_matrix <- cor(epxression, use = "pairwise.complete.obs")
 
 # Visualize correlations as a heatmap
-pheatmap(cor_matrix, 
+pheatmap(cor_matrix,
+         show_rownames = FALSE,
+         show_colnames = FALSE,
          clustering_distance_rows = "correlation", 
          clustering_distance_cols = "correlation",
-         main = "Correlation Heatmap of Genes")
+         fontsize = 4)
 
 ```
 
@@ -117,10 +105,11 @@ scaled_epxr <- t(scale(t(epxression)))
 
 # Plot the heatmap
 pheatmap(scaled_epxr, 
-         show_rownames = TRUE, 
-         show_colnames = TRUE, 
-         cluster_rows = TRUE, 
-         cluster_cols = TRUE, 
+         show_rownames = FALSE,
+         show_colnames = FALSE,
+         cluster_rows = TRUE,
+         cluster_cols = TRUE,
+         fontsize = 4,
          main = "Heatmap of Gene Expression")
 
 ```
@@ -177,9 +166,6 @@ subj_clusters <- data.frame(
   Cluster = results[[1]]$clusters  # Corresponding cluster IDs
 )
 
-# View the mapping
-head(subj_clusters)
-
 # Create a column annotation for clusters
 annotation_col <- data.frame(
   Cluster = factor(results[[1]]$clusters)  # Convert cluster IDs to factors
@@ -194,15 +180,6 @@ epxr_sorted <- scaled_epxr[, sorted_indices]
 # Update the annotation to match the sorted order
 annotation_col <- annotation_col[sorted_indices, , drop = FALSE]
 
-# Calculate row means (or other statistics like row median)
-row_means <- rowMeans(epxr_sorted)
-
-# Sort the row indices based on row means
-sorted_indices <- order(row_means, decreasing = TRUE)
-
-# Reorder the expression matrix based on sorted indices
-epxr_sorted <- epxr_sorted[sorted_indices, ]
-
 color_palette <- colorRampPalette(c("green", "red"))(100)
 breaks <- seq(-4, 4, length.out = 101)
 
@@ -214,7 +191,6 @@ pheatmap(epxr_sorted,
          show_colnames = FALSE,
          color = color_palette,
          breaks = breaks,
-         annotation_col = annotation_col,  # Add column annotations
-         main = "Heatmap with Gene Clusters")
+         annotation_col = annotation_col)
 
 ```
