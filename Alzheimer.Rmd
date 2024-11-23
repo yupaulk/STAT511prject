@@ -86,6 +86,9 @@ library(pheatmap)
 # Compute correlations
 cor_matrix <- cor(epxression, use = "pairwise.complete.obs")
 
+# Set the output file
+png("alzheimer_corr.png", width = 2000, height = 1500, res = 200)
+
 # Visualize correlations as a heatmap
 pheatmap(cor_matrix,
          show_rownames = FALSE,
@@ -93,5 +96,8 @@ pheatmap(cor_matrix,
          clustering_distance_rows = "correlation", 
          clustering_distance_cols = "correlation",
          fontsize = 4)
+
+# Turn off the device to save the image
+dev.off()
 
 ```
