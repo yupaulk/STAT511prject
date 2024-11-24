@@ -30,6 +30,7 @@
 \newcommand{\NN}{\mathbb{N}}
 \newcommand{\QQ}{\mathbb{Q}}
 \usepackage{natbib}
+\bibliographystyle{unsrtnat}
 
 \title[GuidedSparseKmeans]{Outcome-Guided Sparse K-Means for Disease Subtype Discovery via Integrating Phenotypic Data with High-Dimensional Transcriptomic Data}
 \author[]{Group 7: I Hung, Nathan, Paul}
@@ -44,11 +45,49 @@
 
 The challenge in precision medicine is to identify disease subtypes linked to clinical outcomes, as traditional methods often miss complex connections between biological data and clinical traits, resulting in less effective treatments. This study introduces the GuidedSparseK-means algorithm, which integrates clinical data with high-dimensional omics data to address the need for innovative approaches. The algorithm employs a unified objective function that combines weighted K-means clustering, lasso regularization for gene selection, and the inclusion of a phenotypic variable. By iteratively optimizing this function, GuidedSparseK-means aims to yield statistically robust and clinically relevant subtypes, enhancing the potential for personalized treatment strategies.
 
-\section{Data Description and Availiability of data set}
+\section{Data Description}
 
-The study utilizes high-dimensional omics data and clinical phenotypic data from modern epidemiological cohorts, specifically focusing on transcriptomic datasets related to breast cancer and Alzheimer’s disease. These datasets are characterized by their richness and complexity, encompassing a wide array of biological measurements and associated clinical outcomes. The availability of such comprehensive data allows for a robust analysis of the relationships between molecular profiles and clinical characteristics. To facilitate further research and application of the GuidedSparseK-means algorithm, the dataset and the implementation of the algorithm have been made publicly available as an R package on GitHub, ensuring accessibility for researchers in the field.
+The study utilizes high-dimensional omics data and clinical phenotypic data from modern epidemiological cohorts, specifically focusing on transcriptomic datasets related to breast cancer and Alzheimer disease.
 
-METABRIC breast cancer gene expression data (Curtis et al., 2012)
+METABRIC breast cancer gene expression data \citep{curtis2012genomic}.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=\textwidth]{metabric_expr.png}
+\caption{METABRIC breast cancer gene expression dataset}
+\end{figure}
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=\textwidth]{metabric_data.png}
+\caption{METABRIC breast cancer clinical data}
+\end{figure}
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.5\textwidth]{metabric_corr.png}
+\caption{Correlation plot of METABRIC breast cancer gene expression dataset}
+\end{figure}
+
+Alzheimer disease gene expression dataset
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=\textwidth]{alzheimer_expr.png}
+\caption{Alzheimer disease gene expression dataset}
+\end{figure}
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=\textwidth]{alzheimer_data.png}
+\caption{Alzheimer disease clinical data}
+\end{figure}
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.5\textwidth]{alzheimer_corr.png}
+\caption{Correlation plot of Alzheimer disease gene expression dataset}
+\end{figure}
 
 \section{Model and Methods Description}
 
@@ -122,5 +161,6 @@ The data that was used for the simulation studies was outlined in the paper to b
 
 \section{Citations and References}
 
+\bibliography{reference}
 
 \end{document}
