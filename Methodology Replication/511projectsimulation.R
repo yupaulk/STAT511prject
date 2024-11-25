@@ -1,4 +1,6 @@
 library(MASS)
+library(GuidedSparseKmeans)
+library(aricode)
 library(LaplacesDemon)
 K = 3
 
@@ -127,3 +129,14 @@ Y = vector(length = sum(N))
 Y[1:N[1]] = rnorm(N[1], mean = theta[1], sd = 64)
 Y[(N[1]+1):(N[2]+N[1])] = rnorm(N[2], mean = theta[2], sd = 64)
 Y[(N[2]+N[1]+1):sum(N)] = rnorm(N[3], mean = theta[3], sd = 64)
+
+
+ours = GSKm(data, Y, 3, 13.5, 1.5)
+
+theirs = GuidedSparseKmeans(data, Y, 3, 13.5, 1.5, "linear")
+
+true = c(rep(1, N[1]), rep(2,N[2]), rep(3,N[3]))
+
+(compare = ARI(ours$clusters, theirs[[1]]$clusters))
+
+(ourARI = ARI(ours$clusters, true))
