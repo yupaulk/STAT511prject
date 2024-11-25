@@ -2,11 +2,11 @@
 library(pracma)
 
 #Bisection method to find the proper b, initializing at endpoints
-findb = function(obj, s){
+findb = function(obj, s, tol){
     b1 = 0
     b2 = max(abs(obj))
 
-    while(b2 - b1 > 1e-4){
+    while(b2 - b1 > tol){
         w = pmax(obj - (b1 + b2)/2, 0)/Norm(pmax(obj - (b1+b2)/2, 0))
         #If our norm is less than s, we need a smaller b and vice verse
         if(Norm(w,p=1) < s){
@@ -43,7 +43,7 @@ SS = function(X, clust){
 }
 
 
-GSKm = function(x,y, K, s, lam, nstart = 20, maxiter = 15){
+GSKm = function(x,y, K, s, lam, nstart = 20, maxiter = 15, tol = 1e-6){
     
     R2 = as.vector(cor(x,y))^2
     
@@ -61,7 +61,7 @@ GSKm = function(x,y, K, s, lam, nstart = 20, maxiter = 15){
     
     iter = 0
     
-    while(Norm(w-w.prev, p = 1)/Norm(w.prev, p = 1) > 1e-4 && iter < maxiter){
+    while(Norm(w-w.prev, p = 1)/Norm(w.prev, p = 1) > tol && iter < maxiter){
         
         
         iter = iter + 1
@@ -82,7 +82,7 @@ GSKm = function(x,y, K, s, lam, nstart = 20, maxiter = 15){
         
         obj = SOS$bcsscol/SOS$tsscol + lam*R2
         
-        b = findb(obj, s)
+        b = findb(obj, s, tol)
         
         w = softthres(obj, b)/Norm(softthres(obj,b))
         
