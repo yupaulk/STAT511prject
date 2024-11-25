@@ -32,8 +32,8 @@ SS = function(X, clust){
     
     wcsscols = rep(0,ncol(X))
     
-    for(i in unique(c)){
-        redind = which(c == i)
+    for(i in unique(clust)){
+        redind = which(clust == i)
         newdat = X[redind,]
         s.new = scale(newdat, scale = F)
         if(length(redind) == 1){
