@@ -195,7 +195,17 @@ The algorithm’s parameters, including the number of clusters (K), penalty term
 
 The computational efficiency of the algorithm is another significant strength. For example, the breast cancer dataset with over 12,000 genes and 1,870 samples required only 31 seconds to analyze. Similarly, the AD dataset with 15,000 genes and 217 samples was processed in just 7 seconds. The method has been implemented in the R package GuidedSparseKmeans, which is publicly available on GitHub.
 
-In conclusion, the outcome-guided sparse K-means algorithm represents a significant advancement in the integration of clinical and omics data. It provides a reliable framework for identifying biologically and clinically meaningful subtypes of diseases. With the growing availability of comprehensive clinical and omics datasets, this method is expected to have broad applicability in understanding complex diseases.
+\section{Conclusion}
+
+The outcome-guided sparse K-means algorithm represents a significant advancement in the integration of clinical and omics data. It provides a reliable framework for identifying biologically and clinically meaningful subtypes of diseases. With the growing availability of comprehensive clinical and omics datasets, this method is expected to have broad applicability in understanding complex diseases.
+
+The study by~\cite{meng2022outcome} demonstrated concrete evidence of the advantages of using the outcome-guided sparse K-means algorithm over other methods. They provided both simulation results and analyses from two real-world datasets to support their claims. However, several issues arose when attempting to replicate their results.
+
+Firstly, the data we obtained using the link provided in the paper contained different numbers of genes and subjects than those reported. For instance, in their METABRIC example, they reported 24,368 genes and 1,981 subjects. However, the METABRIC data we obtained from their link contained only 20,603 genes and 2,501 subjects. Similarly, they stated that the Alzheimer’s dataset comprised 30,727 transcripts and 217 AD subjects. In contrast, the data we gathered contained 39,376 transcripts and 289 AD subjects.
+
+Secondly, the details of data preprocessing were ambiguous, making it very challenging to arrive at the same final numbers of genes and subjects as reported in the paper. For example, in their motivating example section, they mentioned selecting 408 genes from the 12,180 genes in the METABRIC dataset as input for their algorithm. However, no explanation was provided regarding how these genes were selected.
+
+Thirdly, the code they shared on GitHub was minimal, which made it very difficult for us to replicate their results. It would have been helpful if the code for generating each figure in the paper had been provided.
 
 \section{Citations and References}
 
