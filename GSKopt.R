@@ -52,7 +52,7 @@ SS = function(X, clust){
 
 update = function(X, clust, s, lam, R2){
     
-    SOS = SS(X,c)
+    SOS = SS(X,clust)
     
     obj = SOS$bcsscol/SOS$tsscol + lam*R2
     
