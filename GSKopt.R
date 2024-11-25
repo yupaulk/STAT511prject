@@ -3,7 +3,7 @@ library(pracma)
 
 
 softthres = function(x,y){
-    pmax(x-y,0)
+    sign(x)*pmax(x-y,0)
 
 }
 
@@ -34,12 +34,11 @@ SS = function(X, clust){
     
     for(i in unique(clust)){
         redind = which(clust == i)
-        newdat = X[redind,]
-        s.new = scale(newdat, scale = F)
+        
         if(length(redind) == 1){
-            wcsscols = wcsscols + s.new^2
+            wcsscols = wcsscols + scale(X[redind,], center = T, scale = F)^2
         } else{
-            wcsscols = colSums(s.new^2)
+            wcsscols = wcsscols + colSums(scale(X[redind,], center = T, scale = F)^2)
         }
     }
     
@@ -101,7 +100,7 @@ GSKm = function(x,y, K, s, lam, nstart = 20, maxiter = 15){
         w = update(x, c.cur, s, lam, R2)
         
     }
-    return(c.cur)
+    return(list(clusters = c.cur, weights = w))
 }
 
 
