@@ -148,6 +148,8 @@ where $L(f_0)$ is the likelihood of the null model and $L(f_g)$ is the likelihoo
     \end{algorithmic}
 \end{algorithm}
 
+Note that step 2 is done by clustering our data scaled by multiplying the columns by the square root of the nonnegative weight vectors. The author discusses that this is equivalent to updating the $C_k$ as a weighted k means. To update step 3, the author implements a bisection method starting with $b_1 = 0$ and $b_2 = \max(objective)$ where $objective$ is the list of the objective values per column. Then we iterate along the interval replacing each endpoint with $\frac{b_1+b_2}{2}$ if our weight vector has either too large 1 norm($b_1$ gets replaced) or too low 1 norm($b_2$ gets replaced).
+
 
 \section{Simulation Studies}
 
@@ -173,6 +175,9 @@ The data that was used for the simulation studies was outlined in the paper to b
         \STATE Simulate clinical response for subject i in subclass k with $Y_{ik} \sim N(\theta_k, 64)$.
     \end{algorithmic}
 \end{algorithm}
+
+
+After generating this data and applying both the clustering methods (the one we implemented and the one implemented in the paper), we implemented the algorithm with tolerance of $1e-6$ and the author implemented the algorithm with tolerance $1e-4$. Both of these clustering methods yielded the same clustering, indicating that the method is not very sensitive to the tolerance level set. Further, our cluster achieved a ARI of 0.804, which is consistent with the ARI levels that the author was getting with the simulated data from their paper. This suggests that our implemented version does a similar clustering that the author does in their algorithm. 
 
 \section{Application to Alzheimer’s Disease Data-Results}
 
