@@ -78,7 +78,7 @@ sum(is.na(epxression))
 sum(is.na(outcome))
 ```
 
-# Correlation analysis
+# Correlation plot of samples
 
 ```{r}
 library(pheatmap)
@@ -95,7 +95,7 @@ pheatmap(cor_matrix,
          show_colnames = FALSE,
          clustering_distance_rows = "correlation", 
          clustering_distance_cols = "correlation",
-         fontsize = 4)
+         main = "Correlation Plot of Samples")
 
 # Turn off the device to save the image
 dev.off()
