@@ -107,7 +107,7 @@ for(k in 1:3){
       }
       datam = c(datam, dat)
     }
-    tertdata[,j] = datam
+    tertdata[,j] = sample(datam, length(datam))
     j = j+1
   }
 }

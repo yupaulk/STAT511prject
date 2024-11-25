@@ -1,21 +1,21 @@
 #Implementation of optimization algorithm
+library(pracma)
+
 
 softthres = function(x,y){
-    if(x-y <= 0){
-        return(0)
-    } else{
-        return(x-y)
-    }
+    pmax(x-y,0)
 
 }
+
+#Bisection method to find the proper b
 findb = function(obj, s){
     b1 = 0
     b2 = max(abs(obj))
 
     while(b2 - b1 > 1e-4){
-        w = softthres(obj, (b1 + b2)/2)/norm(softthres(obj, (b1+b2)/2))
+        w = softthres(obj, (b1 + b2)/2)/Norm(softthres(obj, (b1+b2)/2))
         #If our norm is less than s, we need a smaller b and vice verse
-        if(norm(w,1) < s){
+        if(Norm(w,p=1) < s){
             b2 = (b1+b2)/2
         } else{
             b1 = (b1+b2)/2
@@ -26,6 +26,42 @@ findb = function(obj, s){
 
 }
 
+SS = function(X, clust){
+    s.X = scale(X, scale = F)
+    tscols = colSums(s.X^2)
+    
+    wcsscols = rep(0,ncol(X))
+    
+    for(i in unique(c)){
+        redind = which(c == i)
+        newdat = X[redind,]
+        s.new = scale(newdat, scale = F)
+        if(length(redind) == 1){
+            wcsscols = wcsscols + s.new^2
+        } else{
+            wcsscols = colSums(s.new^2)
+        }
+    }
+    
+    bcsscols = tscols - wcsscols
+    
+    return(list(wcsscol = wcsscols, tsscol = tscols, bcsscol = bcsscols, wcss = sum(wcsscols), tss = sum(tscols), bcss = sum(bcsscols)))
+    
+}
+
+
+update = function(X, clust, s, lam, R2){
+    
+    SOS = SS(X,c)
+    
+    obj = SOS$bcsscol/SOS$tsscol + lam*R2
+    
+    b = findb(obj, s)
+    
+    w = softthres(obj, b)/Norm(softthres(obj,b))
+    
+    return(w)
+}
 
 GSKm = function(x,y, K, s, lam, nstart = 20, maxiter = 15){
     
@@ -35,7 +71,7 @@ GSKm = function(x,y, K, s, lam, nstart = 20, maxiter = 15){
     
     Ur = rep(0, ncol(x))
     
-    Ur[1:400] = R2[nonzero]
+    Ur[nonzero] = R2[nonzero]
     
     Urnormalized = abs(Ur/sum(Ur))
     
@@ -45,7 +81,7 @@ GSKm = function(x,y, K, s, lam, nstart = 20, maxiter = 15){
     
     iter = 0
     
-    while(norm(w-w.prev, mode = "L1")/norm(w.prev, mode = "L!") > 1e-4 && iter < maxiter){
+    while(Norm(w-w.prev, p = 1)/Norm(w.prev, p = 1) > 1e-4 && iter < maxiter){
         
         
         iter = iter + 1
@@ -62,10 +98,10 @@ GSKm = function(x,y, K, s, lam, nstart = 20, maxiter = 15){
 
         c.cur = curr.means$cluster
 
-        
+        w = update(x, c.cur, s, lam, R2)
         
     }
-    
+    return(c.cur)
 }
 
 
