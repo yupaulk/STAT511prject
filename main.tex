@@ -24,22 +24,20 @@
 \newtheorem{theorem}            {Theorem}[section]
 \newtheorem{proposition}        [theorem]{Proposition}
 
-
 \newcommand{\CC}{\mathbb{C}}
 \newcommand{\RR}{\mathbb{R}}
 \newcommand{\NN}{\mathbb{N}}
 \newcommand{\QQ}{\mathbb{Q}}
+
 \usepackage{natbib}
 \bibliographystyle{unsrtnat}
+\renewcommand{\bibsection}{}
 
 \title[GuidedSparseKmeans]{Outcome-Guided Sparse K-Means for Disease Subtype Discovery via Integrating Phenotypic Data with High-Dimensional Transcriptomic Data}
 \author[]{Group 7: I Hung, Nathan, Paul}
 \address{Penn State University}
 
-
-
 \begin{document}
-
 
 \section{Problem Description and Modeling Objective}
 
@@ -51,7 +49,7 @@ The study utilizes high-dimensional gene expression data and clinical phenotypic
 
 Gene expression data is used to understand how genes are active in different conditions, such as in healthy versus diseased tissues. By measuring which genes are turned on or off, we can learn about the biological processes happening in a cell.~\citep{emilsson2008genetics} This data helps identify genes involved in diseases like breast cancer and Alzheimer disease, as used in the study~\citep{meng2022outcome}.
 
-METABRIC breast cancer gene expression data~\citep{curtis2012genomic}. This included samples from tumor banks in the United Kingdom and Canada. It contained gene expression profile of 20,603 genes and 2,501 subjects (see Fig.~\ref{fig:metabric_expr} for details). It also contained various clinical data for every sample, particularly the eNottingham prognostic index (NPI); Estrogen receptor status (ER); HER2 receptor status (HER2); and overall survival (see Fig.~\ref{fig:metabric_data} for details).
+The METABRIC breast cancer gene expression data~\citep{curtis2012genomic} included samples from tumor banks in the United Kingdom and Canada. It contains gene expression profile of 20,603 genes and 2,501 subjects (see Fig.~\ref{fig:metabric_expr} for details). It also contains various clinical data for every sample, particularly the Nottingham prognostic index (NPI); Estrogen receptor status (ER); HER2 receptor status (HER2); and overall survival (see Fig.~\ref{fig:metabric_data} for details).
 
 Breast cancer is often tested for three key factors: NPI, ER, and HER2 status, which help guide treatment~\citep{haybittle1982prognostic, jensen1973estrogen, di1987erb}. NPI is a score based on the size of the tumor, the grade of the cancer cells, and how many lymph nodes are affected, helping predict how aggressive the cancer is and how likely it is to spread. ER status checks if the cancer cells have receptors for estrogen, a hormone that can fuel cancer growth. If the cancer is ER-positive, it means estrogen helps the cancer grow, and treatments that block estrogen, like hormone therapy, can be effective. HER2 is a protein that helps cancer cells grow, and if the cancer is HER2-positive, it means the cancer cells have too much of this protein. Targeted therapies like Herceptin can help treat HER2-positive cancers. Together, these tests help doctors determine the best treatment plan for each patient.
 
@@ -76,7 +74,7 @@ Breast cancer is often tested for three key factors: NPI, ER, and HER2 status, w
     \label{fig:metabric_corr}
 \end{figure}
 
-Alzheimer disease (AD) gene expression data~\citep{srinivasan2020alzheimer}. This included samples from tumor banks in the United Kingdom and Canada. It contained 39,376 transcripts from post-mortem fusiform gyrus tissues of 289 AD subjects (see Fig.~\ref{fig:alzheimer_expr} for details). It also contained various clinical data for every sample, particularly the Braak stages of AD (see Fig.~\ref{fig:alzheimer_data} for details).
+Alzheimer disease (AD) gene expression data~\citep{srinivasan2020alzheimer} contains 39,376 transcripts from post-mortem fusiform gyrus tissues of 289 AD subjects (see Fig.~\ref{fig:alzheimer_expr} for details). It also contained various clinical data for every sample, particularly the Braak stages of AD (see Fig.~\ref{fig:alzheimer_data} for details).
 
 The Braak stages~\citep{braak1991neuropathological} describe how AD progresses in the brain, particularly on the spread of tau tangles. In Stage I, the tangles begin in the part of the brain responsible for memory. By Stage II, they spread to areas involved in memory processing. In Stage III, tangles reach regions related to both memory and emotions. As the disease advances to Stage IV, the tangles spread to more areas of the brain, leading to noticeable memory problems. In Stage V, tangles affect larger parts of the brain, and cognitive issues become more severe. Finally, in Stage VI, the tangles are widespread across the brain, and individuals experience severe dementia, with significant impairments in memory and cognition. As the Braak stages progress, the severity of memory and thinking problems increases.
 
@@ -117,7 +115,7 @@ Where C is a partition of our data set into K clusters and $C_k$ for $1\leq k \l
 
 Due to the nature of genetics data, we have that there are usually a significantly more number of genes than we have subjects. Thus, there is usually an assumption of sparsity in the number of genes that would actually have a significant impact on the clustering of subjects. The solution to taking into account this sparsity into our clustering is to maximize the weighted between cluster sum of squares subject to a LASSO like penalty. This usage of between cluster sum of squares is to avoid the issue of a trivial solution to equation (1) from a naive implementation of a lasso penalty. The sparse K means clustering, denoted as $\hat{C}_{Sparse}$, is found by maxizing the objective function 
 \begin{equation}
-    \hat{C}_{Sparse} = \textrm{argmax}_{C,w} \sum_{g=1}^G w_g BCSS_g(C) = \textrm{argmax}_{C,w} w_g\left[\frac{1}{n} \sum_{i,j \in C} (X_{gi} - X_{gj})^2 - \sum_{k=1}^K \frac{1}{n_k}\sum_{i,j \in C_k} (X_{gi} - X_{gj})^2 \right]
+    \hat{C}_{Sparse} = \textrm{argmax}_{C,w} w_g\left[\frac{1}{n} \sum_{i,j \in C} (X_{gi} - X_{gj})^2 - \sum_{k=1}^K \frac{1}{n_k}\sum_{i,j \in C_k} (X_{gi} - X_{gj})^2 \right]
 \end{equation}
 subject to $||w||_2 \leq 1$, $||w||_1 \leq s$, $w \geq 0$ and the weight vector discarded from the argmax. Above, we have that $s$ is a tuning parameter in order to control the number of genes we select. The $L_1$ penalty is chosen to cause gene selection and the $L_2$ penalty is additionally used to facilitate selecting more than one gene. Notice that the total sum of squares term is constant for all clusters and our problem thus involves minimizing the within cluster sum of squares with the additional weights.
     
@@ -158,7 +156,7 @@ The data that was used for the simulation studies was outlined in the paper to b
 \begin{algorithm}
     \caption{Gene Data Generation}
     \begin{algorithmic}[1]
-        \INPUT number of subtypes K, Number of gene modules M
+        \INPUT Number of subtypes K, number of gene modules M
         \OUTPUT A data matrix $X$ containing the simulated gene data and a data vector Y containing clinical response
         \STATE \textbf{Initialization} K = 3, M = 20
         \STATE Simulate the number of subjects in each subtype $N_k \sim POI(100)$ for $1 \leq k \leq K$. The total number of subjects we have is thus $N = \sum_{k=1}^K N_k$
@@ -176,11 +174,11 @@ The data that was used for the simulation studies was outlined in the paper to b
     \end{algorithmic}
 \end{algorithm}
 
-\section{Application to Alzheimer’s Disease Data-Results:}
+\section{Application to Alzheimer’s Disease Data-Results}
 
 This section describes the application of sparse K-means and GuidedSparseKmeans to an RNA-seq dataset from Alzheimer’s disease (AD) patients. AD is a severe neurodegenerative disorder that affects older adults. Its key features include neurofibrillary tangles and neuritic plaques. The dataset consisted of 30,727 transcripts from post-mortem fusiform gyrus tissues of 217 individuals. It is available publicly under GEO ID GSE125583. The data was processed by normalizing gene expression values, filtering out the 50\% lowest-expressed genes, and standardizing each gene to have a mean of 0 and a standard deviation of 1. This resulted in 15,363 genes used for further analysis.
 
-The Braak stage was selected as the clinical outcome variable. It is a measure of the severity of neurofibrillary tangles and is widely used in AD research. Since the Braak stage includes six levels (1 to 6), we treated it as a continuous variable. We calculated $U_g$, the $R^2$ value, from univariate linear regression between each gene and the Braak stage. The number of clusters ($K$) was set to six, matching the six Braak stages. We used the method described in Section 3.4.2 to automatically select the tuning parameter $\lambda$. The parameter $s$ was set to select 396 genes, close to the target of 400 genes. The GuidedSparseKmeans algorithm completed the analysis in 7 seconds, while sparse K-means required 22 seconds.
+The Braak stage was selected as the clinical outcome variable. It is a measure of the severity of neurofibrillary tangles and is widely used in AD research. Since the Braak stage includes six levels (1 to 6), we treated it as a continuous variable. We calculated $U_g$, the $R^2$ value, from univariate linear regression between each gene and the Braak stage. The number of clusters ($K$) was set to six, matching the six Braak stages. We used the method described above to automatically select the tuning parameter $\lambda$. The parameter $s$ was set to select 396 genes, close to the target of 400 genes. The GuidedSparseKmeans algorithm completed the analysis in 7 seconds, while sparse K-means required 22 seconds.
 
 Heatmaps of the selected genes from both methods showed a gradient in expression levels. Expression ranged from low (green) to high (red). Clusters were labeled 1 to 6 to reflect these levels. We evaluated the biological relevance of the AD subtypes by calculating Pearson correlation coefficients between the cluster labels and Braak stages. The GuidedSparseKmeans clusters had a higher correlation (0.282) compared to those from sparse K-means (0.056). This suggests that the subtypes identified by GuidedSparseKmeans were more strongly linked to neurofibrillary tangles.
 
@@ -193,12 +191,11 @@ This paper introduces the outcome-guided sparse K-means algorithm, a novel appro
 
 A distinguishing feature of this algorithm is its use of clinical outcomes as guidance, ensuring that the resulting subtypes are both biologically interpretable and clinically relevant. For example, the Braak stage was selected as the guidance variable in the AD application due to its established role in measuring disease severity. Similarly, in breast cancer, HER2-guided clustering produced results with significant survival differences and biologically meaningful pathway analyses. In situations where domain knowledge is limited, the authors recommend testing multiple outcomes and selecting the one that yields the most interpretable clustering results. 
 
-The algorithm’s parameters, including the number of clusters (K), penalty term (λ), and sparsity level (s), were estimated using gap statistics, sensitivity analysis, and extended gap statistics, respectively. While alternative methods for simultaneous parameter estimation exist, the authors highlight the need for further development of unified approaches. The robustness of the algorithm was evaluated under different scenarios, including varying numbers of selected genes and misspecification of the number of clusters. Simulations indicated that misspecifying K had a significant impact on clustering performance, whereas in real datasets, where cluster boundaries are gradual, the effects were less pronounced.
+The algorithm’s parameters, including the number of clusters (K), penalty term ($\lambda$), and sparsity level (s), were estimated using gap statistics, sensitivity analysis, and extended gap statistics, respectively. While alternative methods for simultaneous parameter estimation exist, the authors highlight the need for further development of unified approaches. The robustness of the algorithm was evaluated under different scenarios, including varying numbers of selected genes and misspecification of the number of clusters. Simulations indicated that misspecifying K had a significant impact on clustering performance, whereas in real datasets, where cluster boundaries are gradual, the effects were less pronounced.
 
 The computational efficiency of the algorithm is another significant strength. For example, the breast cancer dataset with over 12,000 genes and 1,870 samples required only 31 seconds to analyze. Similarly, the AD dataset with 15,000 genes and 217 samples was processed in just 7 seconds. The method has been implemented in the R package GuidedSparseKmeans, which is publicly available on GitHub.
 
 In conclusion, the outcome-guided sparse K-means algorithm represents a significant advancement in the integration of clinical and omics data. It provides a reliable framework for identifying biologically and clinically meaningful subtypes of diseases. With the growing availability of comprehensive clinical and omics datasets, this method is expected to have broad applicability in understanding complex diseases.
-
 
 \section{Citations and References}
 
