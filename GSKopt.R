@@ -1,19 +1,13 @@
 #Implementation of optimization algorithm
 library(pracma)
 
-
-softthres = function(x,y){
-    sign(x)*pmax(x-y,0)
-
-}
-
-#Bisection method to find the proper b
+#Bisection method to find the proper b, initializing at endpoints
 findb = function(obj, s){
     b1 = 0
     b2 = max(abs(obj))
 
     while(b2 - b1 > 1e-4){
-        w = softthres(obj, (b1 + b2)/2)/Norm(softthres(obj, (b1+b2)/2))
+        w = pmax(obj - (b1 + b2)/2, 0)/Norm(pmax(obj - (b1+b2)/2, 0))
         #If our norm is less than s, we need a smaller b and vice verse
         if(Norm(w,p=1) < s){
             b2 = (b1+b2)/2
@@ -49,19 +43,6 @@ SS = function(X, clust){
 }
 
 
-update = function(X, clust, s, lam, R2){
-    
-    SOS = SS(X,clust)
-    
-    obj = SOS$bcsscol/SOS$tsscol + lam*R2
-    
-    b = findb(obj, s)
-    
-    w = softthres(obj, b)/Norm(softthres(obj,b))
-    
-    return(w)
-}
-
 GSKm = function(x,y, K, s, lam, nstart = 20, maxiter = 15){
     
     R2 = as.vector(cor(x,y))^2
@@ -76,7 +57,7 @@ GSKm = function(x,y, K, s, lam, nstart = 20, maxiter = 15){
     
     w = Urnormalized * s
     
-    w.prev = rep(1, ncol(x))
+    w.prev = rep(0, ncol(x))
     
     iter = 0
     
@@ -97,7 +78,13 @@ GSKm = function(x,y, K, s, lam, nstart = 20, maxiter = 15){
 
         c.cur = curr.means$cluster
 
-        w = update(x, c.cur, s, lam, R2)
+        SOS = SS(X,clust)
+        
+        obj = SOS$bcsscol/SOS$tsscol + lam*R2
+        
+        b = findb(obj, s)
+        
+        w = softthres(obj, b)/Norm(softthres(obj,b))
         
     }
     return(list(clusters = c.cur, weights = w))
