@@ -43,6 +43,8 @@ SS = function(X, clust){
 }
 
 
+softthres <- function(obj.per, delta) sign(obj.per) * pmax(0, abs(obj.per) - delta)
+
 GSKm = function(x,y, K, s, lam, nstart = 20, maxiter = 15, tol = 1e-6){
     
     R2 = as.vector(cor(x,y))^2
@@ -78,7 +80,7 @@ GSKm = function(x,y, K, s, lam, nstart = 20, maxiter = 15, tol = 1e-6){
 
         c.cur = curr.means$cluster
 
-        SOS = SS(X,clust)
+        SOS = SS(x,c.cur)
         
         obj = SOS$bcsscol/SOS$tsscol + lam*R2
         
