@@ -37,11 +37,14 @@
 \author[]{Group 7: I Hung, Nathan, Paul}
 \address{Penn State University}
 
+
 \begin{document}
+
 
 \section{Problem Description and Modeling Objective}
 
 The challenge in precision medicine is to identify disease subtypes linked to clinical outcomes, as traditional methods often miss complex connections between biological data and clinical traits, resulting in less effective treatments. This study introduces the GuidedSparseK-means algorithm, which integrates clinical data with high-dimensional omics data to address the need for innovative approaches. The algorithm employs a unified objective function that combines weighted K-means clustering, lasso regularization for gene selection, and the inclusion of a phenotypic variable. By iteratively optimizing this function, GuidedSparseK-means aims to yield statistically robust and clinically relevant subtypes, enhancing the potential for personalized treatment strategies.
+
 
 \section{Data Description}
 
@@ -111,6 +114,7 @@ The first clustering method the paper described is the normal k means algorithm.
 \end{equation}
 Where C is a partition of our data set into K clusters and $C_k$ for $1\leq k \leq K$ is the elements in the kth cluster and $n_k$ is the size of cluster k.
 
+
 \subsection{Sparse K-means Algorithm}
 
 Due to the nature of genetics data, we have that there are usually a significantly more number of genes than we have subjects. Thus, there is usually an assumption of sparsity in the number of genes that would actually have a significant impact on the clustering of subjects. The solution to taking into account this sparsity into our clustering is to maximize the weighted between cluster sum of squares subject to a LASSO like penalty. This usage of between cluster sum of squares is to avoid the issue of a trivial solution to equation (1) from a naive implementation of a lasso penalty. The sparse K means clustering, denoted as $\hat{C}_{Sparse}$, is found by maxizing the objective function 
@@ -153,7 +157,7 @@ Note that step 2 is done by clustering our data scaled by multiplying the column
 
 \section{Simulation Studies}
 
-The data that was used for the simulation studies was outlined in the paper to best emulate certain characteristics of genetic data. There were 3 subtypes in this example, and the data was simulated to have intrinsic genes, confounding genes and noise genes that have a correlated structure. The ways to generate the 3 types of data are described in algorithm 2. 
+The data that was used for the simulation studies was outlined in the paper to best emulate certain characteristics of genetic data. There were 3 subtypes in this example, and the data was simulated to have intrinsic genes, confounding genes and noise genes that have a correlated structure. The ways to generate the 3 types of data are described in algorithm 2.
 
 \begin{algorithm}
     \caption{Gene Data Generation}
@@ -176,22 +180,24 @@ The data that was used for the simulation studies was outlined in the paper to b
     \end{algorithmic}
 \end{algorithm}
 
-
 After generating this data and applying both the clustering methods (the one we implemented and the one implemented in the paper), we implemented the algorithm with tolerance of $1e-6$ and the author implemented the algorithm with tolerance $1e-4$. Both of these clustering methods yielded the same clustering, indicating that the method is not very sensitive to the tolerance level set. Further, our cluster achieved a ARI of 0.804, which is consistent with the ARI levels that the author was getting with the simulated data from their paper. This suggests that our implemented version does a similar clustering that the author does in their algorithm. 
 
-\section{Application to Alzheimer’s Disease Data-Results}
+
+\section{Results: Application to Alzheimer Disease}
 
 This section describes the application of sparse K-means and GuidedSparseKmeans to an RNA-seq dataset from Alzheimer’s disease (AD) patients. AD is a severe neurodegenerative disorder that affects older adults. Its key features include neurofibrillary tangles and neuritic plaques. The dataset consisted of 30,727 transcripts from post-mortem fusiform gyrus tissues of 217 individuals. It is available publicly under GEO ID GSE125583. The data was processed by normalizing gene expression values, filtering out the 50\% lowest-expressed genes, and standardizing each gene to have a mean of 0 and a standard deviation of 1. This resulted in 15,363 genes used for further analysis.
 
-The Braak stage was selected as the clinical outcome variable. It is a measure of the severity of neurofibrillary tangles and is widely used in AD research. Since the Braak stage includes six levels (1 to 6), we treated it as a continuous variable. We calculated $U_g$, the $R^2$ value, from univariate linear regression between each gene and the Braak stage. The number of clusters ($K$) was set to six, matching the six Braak stages. We used the method described above to automatically select the tuning parameter $\lambda$. The parameter $s$ was set to select 396 genes, close to the target of 400 genes. The GuidedSparseKmeans algorithm completed the analysis in 7 seconds, while sparse K-means required 22 seconds.
+The Braak stage was selected as the clinical outcome variable. It is a measure of the severity of neurofibrillary tangles and is widely used in AD research. Since the Braak stage includes six levels (1 to 6), It was treated as a continuous variable. The $U_g$ and $R^2$ values were calculated from univariate linear regression between each gene and the Braak stage. The number of clusters ($K$) was set to six, matching the six Braak stages. The paper used the method described above to automatically select the tuning parameter $\lambda$. The parameter $s$ was set to select 396 genes, close to the target of 400 genes. The GuidedSparseKmeans algorithm completed the analysis in 7 seconds, while sparse K-means required 22 seconds.
 
-Heatmaps of the selected genes from both methods showed a gradient in expression levels. Expression ranged from low (green) to high (red). Clusters were labeled 1 to 6 to reflect these levels. We evaluated the biological relevance of the AD subtypes by calculating Pearson correlation coefficients between the cluster labels and Braak stages. The GuidedSparseKmeans clusters had a higher correlation (0.282) compared to those from sparse K-means (0.056). This suggests that the subtypes identified by GuidedSparseKmeans were more strongly linked to neurofibrillary tangles.
+Heatmaps of the selected genes from both methods showed a gradient in expression levels (see Fig. 6 in~\citep{meng2022outcome}). Expression ranged from low (green) to high (red). Clusters were labeled 1 to 6 to reflect these levels. They evaluated the biological relevance of the AD subtypes by calculating Pearson correlation coefficients between the cluster labels and Braak stages. The GuidedSparseKmeans clusters had a higher correlation (0.282) compared to those from sparse K-means (0.056). This suggests that the subtypes identified by GuidedSparseKmeans were more strongly linked to neurofibrillary tangles.
 
-We also assessed how well the clusters from GuidedSparseKmeans reflected Braak stage information. The relevancy score was high ($Rel = 0.309$), confirming that the algorithm effectively utilized the clinical outcome variable. Pathway enrichment analysis further supported the biological significance of the selected genes. Using the BioCarta database, we found that the genes identified by GuidedSparseKmeans were enriched in the GPCR signaling pathway ($p = 6.59 \times 10^{-6}$) and the NOS1 signaling pathway ($p = 1.61 \times 10^{-5}$). Both pathways are known to play roles in AD. In contrast, sparse K-means did not identify these pathways.
+They also assessed how well the clusters from GuidedSparseKmeans reflected Braak stage information. The relevancy score was high ($Rel = 0.309$), confirming that the algorithm effectively utilized the clinical outcome variable. Pathway enrichment analysis further supported the biological significance of the selected genes. Using the BioCarta database, they found that the genes identified by GuidedSparseKmeans were enriched in the GPCR signaling pathway ($p = 6.59 \times 10^{-6}$) and the NOS1 signaling pathway ($p = 1.61 \times 10^{-5}$). Both pathways are known to play roles in AD. In contrast, sparse K-means did not identify these pathways.
 
 In summary, GuidedSparseKmeans outperformed sparse K-means in identifying AD subtypes and selecting disease-relevant genes. Its ability to incorporate clinical guidance made it more effective in uncovering biologically meaningful insights.
 
+
 \section{Discussion}
+
 This paper introduces the outcome-guided sparse K-means algorithm, a novel approach for integrating clinical outcome data with high-dimensional omics data to identify meaningful disease subtypes. The algorithm addresses key challenges in statistical analysis, including gene selection from large datasets, the incorporation of various types of clinical outcome variables (e.g., continuous, binary, ordinal, or survival data), automatic tuning of parameters, and the evaluation of the relevance between the identified subtypes and the clinical outcomes. Its performance has been demonstrated through both simulations and real-world applications, including breast cancer and Alzheimer’s disease (AD), where it outperforms traditional sparse K-means methods.
 
 A distinguishing feature of this algorithm is its use of clinical outcomes as guidance, ensuring that the resulting subtypes are both biologically interpretable and clinically relevant. For example, the Braak stage was selected as the guidance variable in the AD application due to its established role in measuring disease severity. Similarly, in breast cancer, HER2-guided clustering produced results with significant survival differences and biologically meaningful pathway analyses. In situations where domain knowledge is limited, the authors recommend testing multiple outcomes and selecting the one that yields the most interpretable clustering results. 
@@ -199,6 +205,7 @@ A distinguishing feature of this algorithm is its use of clinical outcomes as gu
 The algorithm’s parameters, including the number of clusters (K), penalty term ($\lambda$), and sparsity level (s), were estimated using gap statistics, sensitivity analysis, and extended gap statistics, respectively. While alternative methods for simultaneous parameter estimation exist, the authors highlight the need for further development of unified approaches. The robustness of the algorithm was evaluated under different scenarios, including varying numbers of selected genes and misspecification of the number of clusters. Simulations indicated that misspecifying K had a significant impact on clustering performance, whereas in real datasets, where cluster boundaries are gradual, the effects were less pronounced.
 
 The computational efficiency of the algorithm is another significant strength. For example, the breast cancer dataset with over 12,000 genes and 1,870 samples required only 31 seconds to analyze. Similarly, the AD dataset with 15,000 genes and 217 samples was processed in just 7 seconds. The method has been implemented in the R package GuidedSparseKmeans, which is publicly available on GitHub.
+
 
 \section{Conclusion}
 
@@ -212,9 +219,11 @@ Secondly, the details of data preprocessing were ambiguous, making it very chall
 
 Thirdly, the code they shared on GitHub was minimal, which made it very difficult for us to replicate their results. It would have been helpful if the code for generating each figure in the paper had been provided.
 
+
 \section{Author Contribution Statement}
 
 \textbf{I Hung:} Conceptualization, Investigation, Writing-Original draft preparation. \textbf{Nathan:} Conceptualization, Investigation, Methodology, Formal analysis, Writing-Original draft preparation. \textbf{Paul:} Conceptualization, Investigation, Data curation, Writing-Original draft preparation, Visualization, Validation.
+
 
 \section{Citations and References}
 
