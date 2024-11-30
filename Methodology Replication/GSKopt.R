@@ -70,7 +70,7 @@ GSKm = function(x,y, K, s, lam, nstart = 20, maxiter = 15, tol = 1e-6){
         
 
         #As per the discussion in the paper we can essentially do this as
-        # an optimization on our original data scaled to the sqrt of the 
+        # an optimization on our original data scaled to the sqrt of the
         #weights as the BCSS has a squared term giving us back the initial weights
         cluster.dat = sweep(x[, w!=0], 2, sqrt(w[w!=0]), "*")
 
@@ -78,16 +78,17 @@ GSKm = function(x,y, K, s, lam, nstart = 20, maxiter = 15, tol = 1e-6){
 
         c.cur = curr.means$cluster
 
-        SOS = SS(X,clust)
+        SOS = SS(x,c.cur)
         
         obj = SOS$bcsscol/SOS$tsscol + lam*R2
         
         b = findb(obj, s, tol)
         
-        w = softthres(obj, b)/Norm(softthres(obj,b))
+        w = pmax(obj - b,0)/Norm(pmax(obj-b,0))
         
     }
     return(list(clusters = c.cur, weights = w))
 }
+
 
 
